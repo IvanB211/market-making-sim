@@ -56,10 +56,15 @@ exactly, whatever the parameters:
 cash + q · mid  ≡  (spread captured)  +  (inventory P&L)
 ```
 
-This is asserted at **every step of every path**, not at the end. A final number
-always looks plausible; an identity that has to hold 500 times a session does
-not, and when it breaks it names the step. Building it first made everything
-downstream faster. Six further self-tests run with no data: a frozen price where
+Two checks, because the strong one is too slow to run everywhere. Every call to
+`simulate()` reconciles the final value against edge plus inventory P&L — O(1),
+so no experiment in this file can quietly run on broken book-keeping. The
+self-tests then assert the identity at **every step of every path**, which is
+the version that localises a bug: a final number always looks plausible, an
+identity that has to hold 500 times a session does not, and when it breaks it
+names the step. Building both first made everything downstream faster.
+
+Six further self-tests run with no data: a frozen price where
 P&L must equal spread minus close-out cost exactly, a zero-width quote that must
 earn exactly nothing, and a realised fill rate that must match `A·exp(−k·δ)`.
 

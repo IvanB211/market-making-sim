@@ -185,6 +185,13 @@ def simulate(width, skew=0.0, p_informed=0.0, power=1.0, decay_with_time=False,
             assert np.allclose(v, edge_total + inv_total, atol=1e-9), \
                 f"ACCOUNTING BROKE at step {i}"
 
+    # The per-step identity above is gated behind check_identity because it is
+    # too slow to run on every measurement. This aggregate version is O(1) per
+    # run, so it costs nothing and it means NO experiment can quietly run on
+    # broken book-keeping -- not just the ones under test.
+    assert np.allclose(cash + q * mid, edge_total + inv_total, rtol=1e-9, atol=1e-6), \
+        "ACCOUNTING BROKE (end of run)"
+
     # ---- close the book by crossing the spread. Liquidating is not free, and
     #      a model where it is free will conclude inventory does not matter.
     liquidation_cost = np.abs(q) * width / 2.0
